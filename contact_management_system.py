@@ -2,9 +2,9 @@ import re
 contacts_dictionary = {}
 def command_line_interface():
     phone_regex = r"^\d{3}-\d{3}-\d{4}$"
-    name_regex = r"^\b[A-Z]{1}[a-z]+\b\s\b[A-Z]{1}[a-z]+\b$"
+    name_regex = r"^[A-Z][a-zA-Z'-]+ [A-Z][a-zA-Z'-]+$"
     email_regex = r"^[A-Za-z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    txt_regex = r"^[A-Za-z0-9_\-]+\.{1}(txt){1}$"
+    txt_regex = r"^[\w\-/]+\.txt$"
     print("Welcome to our Contact Management System!")
     while True:
         main_menu = input("Menu:\n1. Add a new contact\n2. Edit an existing contact\n3. Delete a contact\n4. Search for a contact\n5. Display all contacts\n6. Export (or overwitre) contacts to a new text file\n7. Append updates to anexisting text file backup\n8. Import contacts from a text file\n9. Quit\nEnter number for selected menu option here: ")
@@ -164,7 +164,7 @@ def contacts_export(export_file):
         with open(export_file, "w") as file:
             for index, contact_id in enumerate(contacts_dictionary.keys(), 1):
                 file.write(f"|Contact #{index}.")
-                for inner_key, value in contacts_dictionary[contact_id]:
+                for inner_key, value in contacts_dictionary[contact_id].items():
                     file.write(f"{inner_key}: {value}")
     except OSError:
         print("Operating System Error")
@@ -180,7 +180,7 @@ def contacts_append(append_file):
             for index, key in enumerate(contacts_dictionary.keys(), 1):
                 if key not in contact_id:
                     file.write(f"|Contact #{index}.")
-                    for inner_key, value in contacts_dictionary[key]:
+                    for inner_key, value in contacts_dictionary[key].items():
                         file.write(f"{inner_key}: {value}")
     except FileNotFoundError:
         print("Please enter a file or path that already exists so new contacts can be appended to it.")
@@ -196,7 +196,8 @@ def contact_import(import_file):
             for line in file:
                 contact_id =line.strip().split("|")
             for key in contacts_dictionary.keys():
-                if key not in contact_id:                
+                if key not in contact_id:
+                    pass                
     except FileNotFoundError:
         print("Please enter a file or path that already exists to import.")
     except OSError:
