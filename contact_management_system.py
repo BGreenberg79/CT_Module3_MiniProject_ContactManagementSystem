@@ -7,7 +7,7 @@ def command_line_interface():
     txt_regex = r"^[\w\-/]+\.txt$"
     print("Welcome to our Contact Management System!")
     while True:
-        main_menu = input("Menu:\n1. Add a new contact\n2. Edit an existing contact\n3. Delete a contact\n4. Search for a contact\n5. Display all contacts\n6. Export (or overwitre) contacts to a new text file\n7. Append updates to anexisting text file backup\n8. Import contacts from a text file\n9. Quit\nEnter number for selected menu option here: ")
+        main_menu = input("Menu:\n1. Add a new contact\n2. Edit an existing contact\n3. Delete a contact\n4. Search for a contact\n5. Display all contacts\n6. Export (or overwitre) contacts to a new text file\n7. Import contacts from a text file\n8. Quit\nEnter number for selected menu option here: ")
         if main_menu == "1":
             add_phone_number = input("Please enter the phone number for your new contact here: ")
             add_name = input("Please enter the name for your new contact here: ")
@@ -59,16 +59,16 @@ def command_line_interface():
                     print("Please use a valid file format. Acceptable characters for name are A-Z upper and lowercase, 0-9, _ and -. Please avoid spaces. All files must end in .txt ")
             except Exception as e:
                 print(f"Processing Error: {e}")                                       
+        # elif main_menu == "7":
+        #     append_name = input("Please enter the name of the existing text file you wish to append to in valid .txt format: ")
+        #     try:
+        #         if re.match(txt_regex, append_name):
+        #             contacts_append(append_name)
+        #         else:
+        #             print("Please use a valid file format. Acceptable characters for name are A-Z upper and lowercase, 0-9, _ and -. Please avoid spaces. All files must end in .txt ")
+        #     except Exception as e:
+        #         print(f"Processing Error: {e}")
         elif main_menu == "7":
-            append_name = input("Please enter the name of the existing text file you wish to append to in valid .txt format: ")
-            try:
-                if re.match(txt_regex, append_name):
-                    contacts_append(append_name)
-                else:
-                    print("Please use a valid file format. Acceptable characters for name are A-Z upper and lowercase, 0-9, _ and -. Please avoid spaces. All files must end in .txt ")
-            except Exception as e:
-                print(f"Processing Error: {e}")
-        elif main_menu == "8":
             import_name = input("Please enter the name or path of the txt file you are looking to import: ")
             try:
                 if re.match(txt_regex, import_name):
@@ -77,11 +77,11 @@ def command_line_interface():
                     print("Please use a valid file format. Acceptable characters for name are A-Z upper and lowercase, 0-9, _ and -. Please avoid spaces. All files must end in .txt ")
             except Exception as e:
                 print(f"Processing Error: {e}")
-        elif main_menu == "9":
+        elif main_menu == "8":
             print("Thank you for using our Contact Management System!")
             break
         else:
-            print("Please enter a valid menu option numbered 1 through 9")
+            print("Please enter a valid menu option numbered 1 through 8")
 
 
 
@@ -158,46 +158,74 @@ def display_all_contacts():
             print(f"{inner_key}: {value}")
         print("\n")
 
+# def contacts_export(export_file):
+#     global contacts_dictionary
+#     try:
+#         with open(export_file, "w") as file:
+#             for index, contact_id in enumerate(contacts_dictionary.keys(), 1):
+#                 file.write(f"Contact #{index}: \n")
+#                 for inner_key, value in contacts_dictionary[contact_id].items():
+#                     file.write(f"{inner_key}: {value}\n")
+#     except OSError:
+#         print("Operating System Error")
+#     except Exception as e:
+#         print(f"General Error: {e}")
+
 def contacts_export(export_file):
     global contacts_dictionary
     try:
         with open(export_file, "w") as file:
             for index, contact_id in enumerate(contacts_dictionary.keys(), 1):
-                file.write(f"|Contact #{index}.")
+                file.write(f"Contact #{index}:\n")
                 for inner_key, value in contacts_dictionary[contact_id].items():
-                    file.write(f"{inner_key}: {value}")
+                    file.write(f"{inner_key}: {value}\n")
+                file.write("\n")
     except OSError:
         print("Operating System Error")
     except Exception as e:
         print(f"General Error: {e}")
 
-def contacts_append(append_file):
-    global contacts_dictionary
-    try:
-        with open(append_file, "a+") as file:
-            for line in file:
-                contact_id = line.strip().split("|")
-            for index, key in enumerate(contacts_dictionary.keys(), 1):
-                if key not in contact_id:
-                    file.write(f"|Contact #{index}.")
-                    for inner_key, value in contacts_dictionary[key].items():
-                        file.write(f"{inner_key}: {value}")
-    except FileNotFoundError:
-        print("Please enter a file or path that already exists so new contacts can be appended to it.")
-    except OSError:
-        print("Operating System Error")
-    except Exception as e:
-        print(f"General Error: {e}")
+# def contacts_append(append_file):
+#     global contacts_dictionary
+#     try:
+#         with open(append_file, "a+") as file:
+#             for line in file:
+#                 contact_id = line.strip().split("|")
+#             for index, key in enumerate(contacts_dictionary.keys(), 1):
+#                 if key not in contact_id:
+#                     file.write(f"Contact #{index}.")
+#                     for inner_key, value in contacts_dictionary[key].items():
+#                         file.write(f"{inner_key}: {value}")
+#     except FileNotFoundError:
+#         print("Please enter a file or path that already exists so new contacts can be appended to it.")
+#     except OSError:
+#         print("Operating System Error")
+#     except Exception as e:
+#         print(f"General Error: {e}")
+
+'''
+Saint says we need Flask for this
+'''
 
 def contact_import(import_file):
     global contacts_dictionary
+    phone_regex = r"^\d{3}-\d{3}-\d{4}$"
+    name_regex = r"^[A-Z][a-zA-Z'-]+ [A-Z][a-zA-Z'-]+$"
+    email_regex = r"^[A-Za-z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    phone_id = ""
     try:
         with open(import_file, "r") as file:
             for line in file:
-                contact_id =line.strip().split("|")
-            for key in contacts_dictionary.keys():
-                if key not in contact_id:
-                    pass                
+                import_items = line.strip().split(":")
+            for item in import_items:
+                if item not in contacts_dictionary:
+                    if re.match(phone_regex, item):
+                        item = phone_id
+                        contacts_dictionary[phone_id] = {"Phone Number": phone_id}
+                    if re.match(name_regex, item):
+                        contacts_dictionary[phone_id].update({"Name": item})
+                    if re.match(email_regex, item):
+                        contacts_dictionary[phone_id].update({"Email": item})           
     except FileNotFoundError:
         print("Please enter a file or path that already exists to import.")
     except OSError:
