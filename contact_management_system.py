@@ -83,6 +83,14 @@ def command_line_interface():
         else:
             print("Please enter a valid menu option numbered 1 through 8")
 
+'''
+The command_line_interface function houses the overall backbone of this project including the main_menu input variable which allows users to choose how they want to begin building and interacting with their contact management system.
+This function houses the regex pattern we will use to validate the inputs and formatting of phone numbers, emails, names, and txt file naming. The main menu functions within a while loop that can only be broken if the user inputs 8, which is the option number for quit.
+It uses a series of if/elif tests to determine if the user wants to choose options for adding, editing, deleting, searching, or viewing all contacts. It also has elif statement for exporting and importing contacts through .txt file handling.
+Our command_line_interface uses re.match() to validate it's inputs with the earlier defined regex patterns and if the inputs pass validation they are used as arguments for our various functions built in to the program. This feature is also housed in try, except blocks to catch any unexpected exceptions that can be categorized as general procesing errors, related to our use of regex.
+Each regex nested if statement has an else print statement that follows it that will point out what the acceptable input parameters are so users do not continue to make the same errors multiple times. 
+'''
+
 
 
 def add_contact(phone_number, name, email):
@@ -103,6 +111,13 @@ def add_contact(phone_number, name, email):
         print(f"{key}: {value}")
     # print(contacts_dictionary)
     return contacts_dictionary
+
+'''
+The add_contact function takes in 3 arguments that will be in every contact: phone_number, name, and email. Positionally I chose phone_number first as that was the parameter I wanted to use as the key for the outer portion of contacts_dictionary.
+First we identify that contacts_dictionary is global as all of our functions will reference and return to it. I then use the .update method to set up the general structure of our nested dictionary.
+I follow that with a while loop that allows users to add their own categories with the input of new_category as the nested key and the input of category_value as the nested value.
+I then use conatcts_dictionary[phone_number] to direct inside the nested dictionary and use .update to add on this new key-value pair. Lastly I use a for loop with the .items() method to print off every key:value pair for our new contact and then return our updated contacts_dictionary.
+'''
 
 def edit_contact(id, field, new_info):
     global contacts_dictionary
@@ -131,6 +146,18 @@ def edit_contact(id, field, new_info):
     except KeyError:
         print("Please ensure the original phone number entered to locate the desired contact is valid and was previously added.")
 
+'''
+edit_contact works by taking in the parameters of id to reference which contact we are editing, field to identify which ke-value pair we are editing, and new info to assign the new nested value for this category.
+First we make the contacts_dictionary global and then in a try except block we use a series of if-elif tests to identify if name, email, or phone number is being edited. If phone number is the choice we have to reassign the whole dictionary entry as both the inner value and outer key will be changed.
+After assigning these new values we are also sure to delete the old contact so there is no duplicate with incorrect information.
+The assignment of contacts_dictionary[id][inner key] for name and email is simpler as none of the key's are changed and we can just assign a new inner value.
+Lastly the else block will use a while loop to ask users to confirm they are trying to edit or add an additional manually entered field. If they confirm it we direct inside the appropriate id for the contact we are editing ad use the .update method with (field:new_info) as the inner kay:value pair.
+Then we break the loop. Alternatively if the user types N instead of Y they are not confirming a manual field and we break the loop before any of the data structure is changed by the error.
+The else statement identifies invalid entries and requests the user to enter Y or N instead.
+After the data structure has been changed regardless of field, we print an f-strng to show our user what change has been made and for what contact as confirmation. We then return the new updated contacts_dictionary.
+We also have an exception built in if there is a KeyError where a phone number is entered for a contact that is not in the dictionary already.
+'''
+
 def delete_contact(delete_id):
     global contacts_dictionary
     try:
@@ -139,6 +166,11 @@ def delete_contact(delete_id):
         return contacts_dictionary
     except KeyError:
         print("Please ensure the original phone number entered for the contact you wish to delete has been previously added.")
+
+'''
+delete_contact works by taking the argument of delete_id and locating the entire item for a single outer key. Once it locates this contact's phone number it will run a simple del keyword to remove that single contact from the dictionary and all of its' inner key:value pairs.
+We then return the updted contacts_dictionary without that contact in it. This function, like the previous edit function, has a try-except block for KeyError if a phone number is entered in the valid format but has not been entered into our dictionary yet.
+'''
 
 def search_contact(search_id):
     global contacts_dictionary
@@ -150,6 +182,11 @@ def search_contact(search_id):
     except KeyError:
         print("Please ensure the original phone number entered for the contact you are searching for has been previously added.")                
 
+'''
+search_contact works by taking in a searh_id that is the phone number of the contact we are trying to locate. It uses the global contacts_dictionary and is in a try-except block to catch any KeyErrors if the user tries to find a contact for a phone number that has not yet been entered.
+Within the try block we use a for loop and the .keys() method to locate the search_id as an outer key. We then iterate through the inner key:value pair using a nested for loop and the .items() method, printing our search results in an f-string.  
+'''
+
 def display_all_contacts():
     global contacts_dictionary
     for index, contact_id in enumerate(contacts_dictionary.keys(), 1):
@@ -158,6 +195,11 @@ def display_all_contacts():
             print(f"{inner_key}: {value}")
         print("\n")
 
+'''
+display_all_contacts also uses the global contacts_dictionary but takes no arguments as it will print the whole dictionary. First we iterate through the enumerate of the outer dictionary using the .keys() method inside the built in fucntion.
+We start our index at one and print an f-string with the contact's index number. Within this for loop we then use a nested for loop with inner key, value and the .items() method for each inner dictionary of each outer key.
+Inside the inner dictionaries we print off every key:value pair for that contact. Once both for loops have been fully iterated through, our entire dictionary should be printed in a formatted appearance in the terminal.  
+'''
 # def contacts_export(export_file):
 #     global contacts_dictionary
 #     try:
@@ -184,6 +226,13 @@ def contacts_export(export_file):
         print("Operating System Error")
     except Exception as e:
         print(f"General Error: {e}")
+
+'''
+contacts_export works by exporting the global contacts_dictionary into a .txt file that is named through the argument that is passed through this function. In a try-except block that can catch general errors as well as OS errors, we begin the try block using the with open keyword in write ("w") mode.
+once we've opened this new document we are writing and have referenced it as file, we begin looping through each part of our dictionary to transfer its data to the new file.
+We start with a for loop that enumerates our outer dictionary keys so we can number and index each contact we export using the file.write() method. We then loop through the inner dictionary for each conact_id uisng a nested for loop and the .items() method.
+In this nested for loop we use file.write() method again to write our inner_key:value pair to the new .txt file. Lastly we go back out to our original for loop and print off a final file.write(\n) so our ictionary entries are fully iterated through and can be stored to our new exported file.
+'''
 
 # def contacts_append(append_file):
 #     global contacts_dictionary
