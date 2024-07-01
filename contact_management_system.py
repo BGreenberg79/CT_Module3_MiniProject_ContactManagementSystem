@@ -59,15 +59,6 @@ def command_line_interface():
                     print("Please use a valid file format. Acceptable characters for name are A-Z upper and lowercase, 0-9, _ and -. Please avoid spaces. All files must end in .txt ")
             except Exception as e:
                 print(f"Processing Error: {e}")                                       
-        # elif main_menu == "7":
-        #     append_name = input("Please enter the name of the existing text file you wish to append to in valid .txt format: ")
-        #     try:
-        #         if re.match(txt_regex, append_name):
-        #             contacts_append(append_name)
-        #         else:
-        #             print("Please use a valid file format. Acceptable characters for name are A-Z upper and lowercase, 0-9, _ and -. Please avoid spaces. All files must end in .txt ")
-        #     except Exception as e:
-        #         print(f"Processing Error: {e}")
         elif main_menu == "7":
             import_name = input("Please enter the name or path of the txt file you are looking to import: ")
             try:
@@ -221,7 +212,7 @@ def contacts_export(export_file):
                 file.write(f"Contact #{index}:\n")
                 for inner_key, value in contacts_dictionary[contact_id].items():
                     file.write(f"{inner_key}: {value}\n")
-                file.write("\n")
+                file.write("")
     except OSError:
         print("Operating System Error")
     except Exception as e:
@@ -261,25 +252,65 @@ def contact_import(import_file):
     phone_regex = r"^\d{3}-\d{3}-\d{4}$"
     name_regex = r"^[A-Z][a-zA-Z'-]+ [A-Z][a-zA-Z'-]+$"
     email_regex = r"^[A-Za-z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    phone_id = ""
     try:
         with open(import_file, "r") as file:
-            for line in file:
-                import_items = line.strip().split(":")
-            for item in import_items:
-                if item not in contacts_dictionary:
-                    if re.match(phone_regex, item):
-                        item = phone_id
-                        contacts_dictionary[phone_id] = {"Phone Number": phone_id}
-                    if re.match(name_regex, item):
-                        contacts_dictionary[phone_id].update({"Name": item})
-                    if re.match(email_regex, item):
-                        contacts_dictionary[phone_id].update({"Email": item})           
+            lines = file.readlines()
+
+        contact = {}
+        phone_id = None
+
+        for line in lines:
+            line = line.strip()
+            if line.startswith("Contact #"):
+                if phone_id:
+                    contacts_dictionary[phone_id] = contact
+                contact = {}
+                phone_id = None
+            elif line.startswith("Name:"):
+                name = line.split(": ")[1]
+                if re.match(name_regex, name):
+                    contact["Name"] = name
+            elif line.startswith("Phone Number:"):
+                phone = line.split(": ")[1]
+                if re.match(phone_regex, phone):
+                    contact["Phone Number"] = phone
+                    phone_id = phone
+            elif line.startswith("Email:"):
+                email = line.split(": ")[1]
+                if re.match(email_regex, email):
+                    contact["Email"] = email
+            else:
+                category, value = line.split(": ", 1)
+                contact[category] = value
+        
+        if phone_id:
+            contacts_dictionary[phone_id] = contact
+
+        print("Contacts have been imported successfully.")
+
     except FileNotFoundError:
-        print("Please enter a file or path that already exists to import.")
+        print("The file was not found. Please ensure the file path is correct.")
     except OSError:
         print("Operating System Error")
     except Exception as e:
         print(f"General Error: {e}")
+       
+'''
+contact_import starts by saving regex patterns for phone, name, and email hat we have used earlier locally. Then inside a try block we start by using the with method in read mode to 
+open our argument which is a .txt file we are importing in. Once it is opened as file we use the .readlines() method and save them to the variable lines.
+We then leave the with block to close the file as we have the information saved to lines. We also initialize the dictionary contact and variable phone_id as None.
+We then loop through each line in lines (the list of information we have imported from our .txt file) and start by stripping the white space at thend of the import file using the .strip() method.
+We then use an if/elif/elif/elif/else block to identify what each individual line starts with before storing it in appropriate place in our dictionary. We do this with the .startswith() method
+If the line startswith("Contact #") and there is a phone_id to make the outer key, we can assign the empty contact dictionary we initalized earlier to contacts_dictionary[phone_id] making phone_id the outer key.
+We then will reset contact and phone_id to empty and none so they can be used by the rest of the loop. There is then an elif block assesing if each line starts with name, phone number, or email as the inner key using the .startswith() method.
+For each of those we assign a variable to the inner value using a .split on the colon (line.split(": ")) and locating to [1] (the second index location) of the list that .split is forming.
+We then assign to the local dictionary, contact, the key of "Name", "Phone Number", or "Email" the value that we just isolated using the .split method as long as the value we are isolating matches the appropriate regex pattern we set up earlier in the function.
+Lastly there is an else block to catch manually entered categories that won't have a preset inner key or regex to help with location or validation. In the else block we unpack the line.split list into category and then value by splitting using the colon again and setting the max limit to 1.
+We then assign these two new variables to the appropriate inner dictionary location by using contact[category] = value.
+After we have set up the location in the appropriate inner or outer dictionary for each line of the imported .txt file we run an if test and if there is a phone_id to store as the outer key, it returns as true,
+and we locate our local dictionary named contact at contacts_dictionary[phone_id] = contact (the outer value, also known as the inner key and inner value) to ensure that our import is stored into the global dictionary.
+The try block ends with exceptions for FileNotFound, Operating System, and for a general exception to pick up any error messages the user may experience. Two key aspect of this function is that it will not reinitialize the outer global dictionary so any contacts added in before running the import will not be lost,
+and also because python dictionaries do not allow duplicate keys, it will not create a duplicate if an import includes a contact that has already been added manually. 
+'''
 
 command_line_interface()
